@@ -48,6 +48,7 @@ pub fn ui_system(mut contexts: EguiContexts, mut state: ResMut<SimState>) {
                 .checkbox(&mut state.wrap_enabled, "Torus Wrap (Ghost Points)")
                 .changed()
             {
+                state.sites.clear(); 
                 state.rebuild_requested = true;
             }
 
