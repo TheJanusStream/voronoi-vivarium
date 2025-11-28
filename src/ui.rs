@@ -19,15 +19,14 @@ pub fn setup_scene(mut commands: Commands) {
 
     // Camera
     commands.spawn((
-        Transform::from_xyz(0.0, 20.0, 0.0).looking_at(Vec3::ZERO, Vec3::Y),
+        Transform::from_xyz(0.0, -20.0, 0.0).looking_at(Vec3::ZERO, Vec3::Y),
         PanOrbitCamera {
             focus: Vec3::ZERO,
             button_orbit: MouseButton::Right,
             button_pan: MouseButton::Middle,
             ..default()
         },
-        // CRITICAL: This component enables mouse picking from this camera
-        MeshPickingCamera, 
+        MeshPickingCamera,
     ));
 }
 
@@ -55,6 +54,12 @@ pub fn ui_system(mut contexts: EguiContexts, mut state: ResMut<SimState>) {
             if ui.button("Regenerate Graph").clicked() {
                 state.rebuild_requested = true;
             }
+
+            ui.separator();
+            ui.label("Chemistry Settings");
+
+            ui.add(egui::Slider::new(&mut state.diffusion_rate, 0.0..=5.0).text("Diffusion Rate"));
+            ui.add(egui::Slider::new(&mut state.decay_rate, 0.0..=1.0).text("Decay Rate"));
         });
     }
 }
