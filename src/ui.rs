@@ -56,10 +56,41 @@ pub fn ui_system(mut contexts: EguiContexts, mut state: ResMut<SimState>) {
             }
 
             ui.separator();
-            ui.label("Chemistry Settings");
+            ui.label("Chemical Physics");
 
-            ui.add(egui::Slider::new(&mut state.diffusion_rate, 0.0..=5.0).text("Diffusion Rate"));
-            ui.add(egui::Slider::new(&mut state.decay_rate, 0.0..=1.0).text("Decay Rate"));
+            // Grid layout for neatness
+            egui::Grid::new("physics_grid")
+                .striped(true)
+                .show(ui, |ui| {
+                    ui.label("Channel");
+                    ui.label("Diffusion");
+                    ui.label("Decay");
+                    ui.end_row();
+
+                    // Red
+                    ui.label(egui::RichText::new("Red").color(egui::Color32::RED));
+                    ui.add(egui::Slider::new(&mut state.diffusion_rates.x, 0.0..=5.0));
+                    ui.add(egui::Slider::new(&mut state.decay_rates.x, 0.0..=2.0));
+                    ui.end_row();
+
+                    // Green
+                    ui.label(egui::RichText::new("Green").color(egui::Color32::GREEN));
+                    ui.add(egui::Slider::new(&mut state.diffusion_rates.y, 0.0..=5.0));
+                    ui.add(egui::Slider::new(&mut state.decay_rates.y, 0.0..=2.0));
+                    ui.end_row();
+
+                    // Blue
+                    ui.label(egui::RichText::new("Blue").color(egui::Color32::BLUE));
+                    ui.add(egui::Slider::new(&mut state.diffusion_rates.z, 0.0..=5.0));
+                    ui.add(egui::Slider::new(&mut state.decay_rates.z, 0.0..=2.0));
+                    ui.end_row();
+
+                    // Emission
+                    ui.label(egui::RichText::new("Glow").color(egui::Color32::GOLD));
+                    ui.add(egui::Slider::new(&mut state.diffusion_rates.w, 0.0..=10.0));
+                    ui.add(egui::Slider::new(&mut state.decay_rates.w, 0.0..=5.0));
+                    ui.end_row();
+                });
         });
     }
 }

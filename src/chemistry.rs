@@ -1,3 +1,4 @@
+use crate::state::SimState;
 use bevy::prelude::*;
 
 // --- Components ---
@@ -36,24 +37,21 @@ pub struct CellMap {
 
 pub fn reaction_diffusion_system(
     mut query: Query<(Entity, &Neighbors, &Chemicals, &mut NextChemicals)>,
-    // We need read-access to all chemicals to query neighbors randomly
     all_chemicals: Query<&Chemicals>,
     cell_map: Res<CellMap>,
     time: Res<Time>,
+    state: Res<SimState>,
 ) {
     let dt = time.delta_secs();
-    let diffusion_rate = 2.0;
-    let decay_rate = 0.5;
+    let diff = state.diffusion_rates;
+    let decay = state.decay_rates;
 
-    // For every cell...
     for (_entity, neighbors, my_chem, mut next_chem) in query.iter_mut() {
         let mut laplacian_r = 0.0;
         let mut laplacian_g = 0.0;
         let mut laplacian_b = 0.0;
         let mut laplacian_e = 0.0;
 
-        // Calculate Graph Laplacian: Sum(Neighbor - Self)
-        // This works for any topology (torus, sphere, plane)
         for &neighbor_idx in &neighbors.indices {
             if let Some(neighbor_entity) = cell_map.entities.get(neighbor_idx) {
                 if let Ok(neighbor_chem) = all_chemicals.get(*neighbor_entity) {
@@ -71,17 +69,17 @@ pub fn reaction_diffusion_system(
         // For pure diffusion, just summing is standard if distances are roughly equal.
 
         // 1. Diffusion Step
-        next_chem.r = my_chem.r + (diffusion_rate * laplacian_r * dt);
-        next_chem.g = my_chem.g + (diffusion_rate * laplacian_g * dt);
-        next_chem.b = my_chem.b + (diffusion_rate * laplacian_b * dt);
-        next_chem.e = my_chem.e + (diffusion_rate * laplacian_e * dt);
+        next_chem.r = my_chem.r + (diff.x * laplacian_r * dt);
+        next_chem.g = my_chem.g + (diff.y * laplacian_g * dt);
+        next_chem.b = my_chem.b + (diff.z * laplacian_b * dt);
+        next_chem.e = my_chem.e + (diff.w * laplacian_e * dt);
 
         // 2. Reaction / Decay Step (Simple logic for now)
         // Global decay prevents saturation
-        next_chem.r -= decay_rate * dt * next_chem.r;
-        next_chem.g -= decay_rate * dt * next_chem.g;
-        next_chem.b -= decay_rate * dt * next_chem.b;
-        next_chem.e -= decay_rate * dt * next_chem.e;
+        next_chem.r -= decay.x * dt * next_chem.r;
+        next_chem.g -= decay.y * dt * next_chem.g;
+        next_chem.b -= decay.z * dt * next_chem.b;
+        next_chem.e -= decay.w * dt * next_chem.e;
 
         // Clamp
         next_chem.r = next_chem.r.clamp(0.0, 1.0);
@@ -115,10 +113,7 @@ pub fn state_update_system(
     }
 }
 
-// Uses Pointer<Down> for instant response (ignores micro-drags)
-// Uses Trigger<T> syntax which provides clean access to the target entity
 pub fn on_click_splash(trigger: On<Pointer<Press>>, mut query: Query<&mut Chemicals>) {
-    // trigger.entity() returns the entity that the observer is attached to
     if let Ok(mut chem) = query.get_mut(trigger.original_event_target()) {
         chem.r += 50.0; // Massive Red boost
         chem.g += 50.0; // Massive Green boost
