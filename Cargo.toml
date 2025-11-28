@@ -1,0 +1,25 @@
+[package]
+name = "voronoi-vivarium"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+bevy = "0.17.2"
+bevy_egui = "0.38.0"
+bevy_panorbit_camera = "0.33.0"
+voronator = "0.2.1" # Core library for Voronoi/Delaunay
+rand = "0.8.5"      # For random point initialization
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+getrandom = { version = "0.2", features = ["js"] }
+web-sys = { version = "0.3.82", features = [
+    "Document",
+    "Window",
+    "HtmlElement",
+    "HtmlAnchorElement",
+    "Blob",
+    "Url",
+    "BlobPropertyBag"
+] }
+wasm-bindgen = "0.2.105"
+js-sys = "0.3.82"

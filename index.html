@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voronoi Vivarium</title>
+    <style>
+        body { margin: 0; background-color: #222; overflow: hidden; height: 100vh; width: 100vw; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script type="module">
+        import init from './voronoi-vivarium.js';
+        // Learned from LRN-COOP-260: Suppress context menu for right-click orbit
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        async function run() {
+            await init();
+        }
+        run();
+    </script>
+</body>
+</html>
