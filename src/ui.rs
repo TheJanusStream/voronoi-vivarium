@@ -49,7 +49,7 @@ fn matrix_ui(ui: &mut egui::Ui, matrix: &mut Mat3, id_salt: &str) {
             ("B Out", egui::Color32::BLUE),
         ];
 
-        for r in 0..3 {
+        for (r, _label) in labels.iter().enumerate() {
             ui.label(egui::RichText::new(labels[r].0).color(labels[r].1));
             // Bevy Mat3 is Column-Major [col][row]
             ui.add(
@@ -166,14 +166,14 @@ pub fn ui_system(mut contexts: EguiContexts, mut state: ResMut<SimState>) {
                     .show(ui, |ui| {
                         if ui.button("🎲 Randomize Physics").clicked() {
                             let mut rng = rand::thread_rng();
-                            // Diffusion: 0.5 to 4.0
+                            // Diffusion: 0.5 to 2.0
                             state.diffusion_rates = Vec4::new(
                                 rng.gen_range(0.1..2.0),
                                 rng.gen_range(0.1..2.0),
                                 rng.gen_range(0.1..2.0),
                                 rng.gen_range(0.1..4.0), // Emission diffuses faster
                             );
-                            // Decay: 0.01 to 0.3 (keep it low to sustain life)
+                            // Decay: 0.01 to 0.4 (keep it low to sustain life)
                             state.decay_rates = Vec4::new(
                                 rng.gen_range(0.01..0.4),
                                 rng.gen_range(0.01..0.4),

@@ -55,13 +55,13 @@ pub fn reaction_diffusion_system(
         let mut laplacian_e = 0.0;
 
         for &neighbor_idx in &neighbors.indices {
-            if let Some(neighbor_entity) = cell_map.entities.get(neighbor_idx) {
-                if let Ok(neighbor_chem) = all_chemicals.get(*neighbor_entity) {
-                    laplacian_r += neighbor_chem.r - my_chem.r;
-                    laplacian_g += neighbor_chem.g - my_chem.g;
-                    laplacian_b += neighbor_chem.b - my_chem.b;
-                    laplacian_e += neighbor_chem.e - my_chem.e;
-                }
+            if let Some(neighbor_entity) = cell_map.entities.get(neighbor_idx)
+                && let Ok(neighbor_chem) = all_chemicals.get(*neighbor_entity)
+            {
+                laplacian_r += neighbor_chem.r - my_chem.r;
+                laplacian_g += neighbor_chem.g - my_chem.g;
+                laplacian_b += neighbor_chem.b - my_chem.b;
+                laplacian_e += neighbor_chem.e - my_chem.e;
             }
         }
 
@@ -135,49 +135,49 @@ pub fn chemical_motility_system(
 
         // 2. Interactive Forces
         for &n_idx in &neighbors.indices {
-            if let Some(n_entity) = cell_map.entities.get(n_idx) {
-                if let Ok(n_chem) = all_chemicals.get(*n_entity) {
-                    let n_pos = state.sites[n_idx];
-                    let mut dir = n_pos - my_pos;
+            if let Some(n_entity) = cell_map.entities.get(n_idx)
+                && let Ok(n_chem) = all_chemicals.get(*n_entity)
+            {
+                let n_pos = state.sites[n_idx];
+                let mut dir = n_pos - my_pos;
 
-                    // Torus Wrap Distance Logic
-                    if state.wrap_enabled {
-                        if dir.x > bound {
-                            dir.x -= domain_width;
-                        } else if dir.x < -bound {
-                            dir.x += domain_width;
-                        }
-
-                        if dir.y > bound {
-                            dir.y -= domain_width;
-                        } else if dir.y < -bound {
-                            dir.y += domain_width;
-                        }
+                // Torus Wrap Distance Logic
+                if state.wrap_enabled {
+                    if dir.x > bound {
+                        dir.x -= domain_width;
+                    } else if dir.x < -bound {
+                        dir.x += domain_width;
                     }
 
-                    let dist_sq = dir.length_squared();
-                    if dist_sq > 0.0001 {
-                        let dist = dist_sq.sqrt();
-                        let norm_dir = dir / dist;
-
-                        // Force Calculation:
-                        // Strength = Self(RGB) * Matrix * Neighbor(RGB)
-                        // This gives a scalar: >0 Attract, <0 Repel
-                        let n_rgb = Vec3::new(n_chem.r, n_chem.g, n_chem.b);
-
-                        // Transpose isn't built-in for Vec3 dot logic easily in this algebra,
-                        // so: Strength = Self dot (Matrix * Neighbor)
-                        let interaction_vec = forces * n_rgb;
-                        let strength = my_rgb.dot(interaction_vec);
-
-                        // Normalize by distance?
-                        // Usually force falls off with distance (gravity/magnetic)
-                        // Let's say Force ~ Strength / dist
-                        // Clamp distance to avoid singularity
-                        let safe_dist = dist.max(0.1);
-
-                        total_force += norm_dir * (strength / safe_dist) * 10.0;
+                    if dir.y > bound {
+                        dir.y -= domain_width;
+                    } else if dir.y < -bound {
+                        dir.y += domain_width;
                     }
+                }
+
+                let dist_sq = dir.length_squared();
+                if dist_sq > 0.0001 {
+                    let dist = dist_sq.sqrt();
+                    let norm_dir = dir / dist;
+
+                    // Force Calculation:
+                    // Strength = Self(RGB) * Matrix * Neighbor(RGB)
+                    // This gives a scalar: >0 Attract, <0 Repel
+                    let n_rgb = Vec3::new(n_chem.r, n_chem.g, n_chem.b);
+
+                    // Transpose isn't built-in for Vec3 dot logic easily in this algebra,
+                    // so: Strength = Self dot (Matrix * Neighbor)
+                    let interaction_vec = forces * n_rgb;
+                    let strength = my_rgb.dot(interaction_vec);
+
+                    // Normalize by distance?
+                    // Usually force falls off with distance (gravity/magnetic)
+                    // Let's say Force ~ Strength / dist
+                    // Clamp distance to avoid singularity
+                    let safe_dist = dist.max(0.1);
+
+                    total_force += norm_dir * (strength / safe_dist) * 10.0;
                 }
             }
         }
