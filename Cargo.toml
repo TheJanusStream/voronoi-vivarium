@@ -21,5 +21,5 @@ web-sys = { version = "0.3.82", features = [
     "Url",
     "BlobPropertyBag"
 ] }
-wasm-bindgen = "0.2.105"
+wasm-bindgen = "0.2.106"
 js-sys = "0.3.82"
