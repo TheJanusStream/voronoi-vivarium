@@ -43,7 +43,7 @@ jobs:
           wasm-bindgen --out-dir ./dist --target web \
             --out-name voronoi-vivarium \
             --no-typescript \
-            target/wasm32-unknown-unknown/release/voronoi_vivarium.wasm
+            target/wasm32-unknown-unknown/release/voronoi-vivarium.wasm
 
       - name: Optimize WASM
         run: wasm-opt -Oz -o ./dist/voronoi-vivarium_bg.wasm ./dist/voronoi-vivarium_bg.wasm
