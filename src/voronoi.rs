@@ -127,6 +127,7 @@ pub fn spawn_mesh_system(
         }
 
         let mut rng = rand::thread_rng();
+        let range_max = (DOMAIN_SIZE / 2.0) as f32;
 
         for (i, cell) in diagram.cells().iter().take(state.cell_count).enumerate() {
             let points: Vec<Vec3> = cell
@@ -169,12 +170,27 @@ pub fn spawn_mesh_system(
                     }) // Update Neighbors
                     .remove::<Aabb>(); // CRITICAL: Force AABB regeneration for picking!
             } else {
-                // SPAWN PATH
+                // SPAWN PATH: Gradient Initialization
+                let pos = state.sites[i];
+
+                // Normalize -10..10 to 0..1
+                let nx = (pos.x / range_max + 1.0) * 0.5;
+                let ny = (pos.y / range_max + 1.0) * 0.5;
+                let dist_center = 1.0 - (pos.length() / range_max).clamp(0.0, 1.0);
+
+                // Base Colors: Red (X), Green (Y), Blue (Center)
+                let r_base = nx;
+                let g_base = ny;
+                let b_base = dist_center;
+
+                // Add Noise
+                let noise = 0.05;
+
                 let chem = Chemicals {
-                    r: rng.r#gen(),
-                    g: rng.r#gen(),
-                    b: rng.r#gen(),
-                    e: rng.r#gen(),
+                    r: (r_base + rng.gen_range(-noise..noise)).clamp(0.0, 1.0),
+                    g: (g_base + rng.gen_range(-noise..noise)).clamp(0.0, 1.0),
+                    b: (b_base + rng.gen_range(-noise..noise)).clamp(0.0, 1.0),
+                    e: rng.r#gen(), // Emission can be random
                 };
 
                 let id = commands
@@ -233,7 +249,7 @@ pub fn on_cell_drag(
         // With standard look_at(ZERO, Y), screen Up (Y-) moves into the screen (Z-)
 
         // Sensitivity factor (approximate for height=20.0)
-        let sensitivity = 0.025;
+        let sensitivity = 0.05;
 
         if let Some(site) = state.sites.get_mut(idx) {
             site.x += delta.x * sensitivity;
